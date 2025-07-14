@@ -1,74 +1,59 @@
-import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { authAPI, type LoginRequest, type ApiError } from "@/services/api";
-import { useEffect } from "node_modules/react-resizable-panels/dist/declarations/src/vendor/react";
+import { useRegisterUserMutation } from "../features/tenderApi";
 
-const Login = () => {
+const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [organisation, setOrganisation] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
+
   const navigate = useNavigate();
+  const [registerUser, { isLoading }] = useRegisterUserMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    const formData = {
+      user: {
+        name,
+        email,
+        password,
+        password_confirmation: confirmPassword,
+        phone,
+        address,
+        organization: organisation,
+      },
+    };
+
     try {
-      const credentials: LoginRequest = { email, password };
-      const response = await authAPI.login(credentials);
-
-      // Debug: Log the actual response
-      console.log("Login response:", response);
-
-      // Check multiple possible response structures
-      if (response.success || response.data || response.token) {
-        // Handle different response structures
-        const token = response.data?.token || response.token;
-        const user = response.data?.user ||
-          response.user || { email, name: "Admin" };
-
-        if (token) {
-          // Store authentication data
-          localStorage.setItem("authToken", token);
-          localStorage.setItem("userData", JSON.stringify(user));
-
-          console.log("Login successful, navigating to dashboard");
-          // Navigate to dashboard
-
-          if (user?.role === "general") {
-            navigate("/user/tender");
-          } else {
-            navigate("/");
-          }
-          return;
-        }
-      }
-
-      // If we reach here, login failed
-      setError(response.message || "Login failed - Invalid credentials");
-    } catch (err) {
-      console.error("Login error:", err);
-      const apiError = err as ApiError;
-      setError(apiError.message || "An error occurred during login");
-    } finally {
-      setIsLoading(false);
+      const res = await registerUser(formData).unwrap();
+      console.log("Registration successful:", res);
+      navigate("/login");
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      setError(err?.data?.message || "Something went wrong");
     }
   };
 
-
-  
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-200 to-slate-300 flex">
-      {/* Left Side - Illustration */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative">
+      {/* Left Illustration */}
+       <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative">
         <div className="max-w-md w-full relative">
           {/* Main illustration container */}
           <div className="relative">
@@ -86,7 +71,7 @@ const Login = () => {
 
                   {/* Sign In Text */}
                   <div className="text-sm font-bold text-slate-800 mb-3">
-                    SIGN IN
+                    SIGN UP
                   </div>
 
                   {/* Form placeholder lines */}
@@ -98,7 +83,7 @@ const Login = () => {
 
                   {/* Login Button */}
                   <div className="bg-blue-600 text-white py-2 px-6 rounded-lg text-sm font-medium">
-                    Login
+                    Register
                   </div>
                 </div>
               </div>
@@ -174,70 +159,117 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Right Side - Login Form */}
+
+      {/* Right - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Header */}
             <div className="mb-8">
               <h1 className="text-gray-600 text-lg mb-2">
-                Welcome back! <span className="text-2xl">👋</span>
+                Sign Up! <span className="text-2xl">👋</span>
               </h1>
               <h2 className="text-3xl font-bold text-gray-900">
-                Login to your account
+                Create your account
               </h2>
             </div>
 
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Please enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-4 border border-gray-300 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+            {/* Name & Email */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="w-full md:w-1/2 space-y-2">
+                <label htmlFor="name" className="text-sm font-medium text-gray-700">
+                  Name
+                </label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Enter your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="w-full md:w-1/2 space-y-2">
+                <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+                {/* Phone */}
+            
             </div>
 
-            {/* Password Field */}
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <div className="relative">
+            {/* Password & Confirm Password */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="w-full md:w-1/2 space-y-2">
+                <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  Password
+                </label>
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
+              </div>
+
+              <div className="w-full md:w-1/2 space-y-2">
+                <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                  Confirm Password
+                </label>
+                <Input
+                  id="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Confirm password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
               </div>
             </div>
+
+            {/* Organisation & Address */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="w-full md:w-1/2 space-y-2">
+                <label htmlFor="organisation" className="text-sm font-medium text-gray-700">
+                  Organisation
+                </label>
+                <Input
+                  id="organisation"
+                  type="text"
+                  placeholder="Enter organisation"
+                  value={organisation}
+                  onChange={(e) => setOrganisation(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="w-full md:w-1/2 space-y-2">
+                <label htmlFor="address" className="text-sm font-medium text-gray-700">
+                  Address
+                </label>
+                <Input
+                  id="address"
+                  type="text"
+                  placeholder="Enter address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+          
 
             {/* Error Message */}
             {error && (
@@ -247,22 +279,20 @@ const Login = () => {
               </div>
             )}
 
-            {/* Login Button */}
+            {/* Submit */}
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-4 rounded-xl font-medium text-lg transition-colors mt-6"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-medium text-lg transition-colors mt-6"
               disabled={isLoading}
             >
-              {isLoading ? "Logging In..." : "Login"}
+              {isLoading ? "Registering..." : "Register"}
             </Button>
 
-            {/* Forget Password Link */}
-            <div className="text-right mt-4">
-              <Link
-                to="/register"
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium hover:underline"
-              >
-                Sign Up
+            {/* Already have an account */}
+            <div className="text-center mt-4">
+              <span className="text-sm text-gray-600">Already have an account? </span>
+              <Link to="/login" className="text-blue-600 font-medium hover:underline">
+                Login
               </Link>
             </div>
           </form>
@@ -272,4 +302,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

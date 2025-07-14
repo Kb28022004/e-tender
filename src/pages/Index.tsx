@@ -9,6 +9,9 @@ import { useNavigate } from "react-router-dom";
 const Index = () => {
   const navigate = useNavigate();
 
+    const user=JSON.parse(localStorage.getItem("userData"))
+  console.log("user",user)
+
   useEffect(() => {
     // Check if user is authenticated
     const authToken = localStorage.getItem('authToken');
@@ -38,7 +41,7 @@ const Index = () => {
         {/* Dashboard Content */}
         <main className="flex-1 p-8">
           {/* Greeting Section */}
-          <GreetingSection />
+          <GreetingSection user={user} />
           
           {/* Metric Cards */}
           <MetricCards />

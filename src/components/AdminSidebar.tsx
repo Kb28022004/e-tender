@@ -48,11 +48,11 @@ const menuItems = [
     icon: RefreshCw,
     path: "/refund"
   },
-  {
-    title: "Authorization",
-    icon: Shield,
-    path: "/authorization"
-  }
+  // {
+  //   title: "Authorization",
+  //   icon: Shield,
+  //   path: "/authorization"
+  // }
 ];
 
 const AdminSidebar = () => {

@@ -10,6 +10,9 @@ const AdminHeader = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
+  const user=JSON.parse(localStorage.getItem("userData"))
+  console.log("user",user)
+
   const handleLogout = async () => {
     try {
       // Call logout API
@@ -75,7 +78,7 @@ const AdminHeader = () => {
                 />
             </div>
             <div className="flex items-center space-x-1">
-              <span className="text-gray-700 font-medium">Rahul Chandani</span>
+              <span className="text-gray-700 font-medium">{user?.name || 'Admin'} </span>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </div>
             </div>
@@ -84,7 +87,7 @@ const AdminHeader = () => {
             {isDropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
                 <div className="px-4 py-2 border-b border-gray-100">
-                  <div className="text-sm font-medium text-gray-900">Rahul Chandani</div>
+                  <div className="text-sm font-medium text-gray-900">{user?.name}</div>
                   <div className="text-xs text-gray-500">Admin</div>
                 </div>
                 
